@@ -85,8 +85,12 @@
 
 - (void)flushCache
 {
-    [SDWebImageManager.sharedManager.imageCache clearMemory];
-    [SDWebImageManager.sharedManager.imageCache clearDiskOnCompletion:nil];
+//    [SDWebImageManager.sharedManager.imageCache clearMemory];// 清除内存
+//    [SDWebImageManager.sharedManager.imageCache clearDiskOnCompletion:nil];// 清除磁盘缓存
+    
+    [SDWebImageManager.sharedManager.imageCache deleteOldFilesWithCompletionBlock:^{
+        NSLog(@"删除就文件完成");
+    }];
 }
 							
 - (BOOL)shouldAutorotateToInterfaceOrientation:(UIInterfaceOrientation)interfaceOrientation

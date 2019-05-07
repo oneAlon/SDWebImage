@@ -79,8 +79,12 @@ static char TAG_ACTIVITY_SHOW;
                           progress:(nullable SDWebImageDownloaderProgressBlock)progressBlock
                          completed:(nullable SDExternalCompletionBlock)completedBlock
                            context:(nullable NSDictionary<NSString *, id> *)context {
+    // 取消当前图片的下载操作(为什么要取消?), 假如有两个urlA和urlB, 一个图片先设置了urlA, 然后又设置了urlB
+    // 这个时候可能会出现urlB先显示然后再显示urlA, 导致显示结果错误
     NSString *validOperationKey = operationKey ?: NSStringFromClass([self class]);
+    // 通过runtime将operationDictionary和self做关联, 通过key取出之前的下载操作, cancel下载操作
     [self sd_cancelImageLoadOperationWithKey:validOperationKey];
+    // 将url做关联, 提供方法获取url
     objc_setAssociatedObject(self, &imageURLKey, url, OBJC_ASSOCIATION_RETAIN_NONATOMIC);
     
     dispatch_group_t group = context[SDWebImageInternalSetImageGroupKey];
@@ -111,6 +115,7 @@ static char TAG_ACTIVITY_SHOW;
         }
         
         __weak __typeof(self)wself = self;
+        // 设置进度
         SDWebImageDownloaderProgressBlock combinedProgressBlock = ^(NSInteger receivedSize, NSInteger expectedSize, NSURL * _Nullable targetURL) {
             wself.sd_imageProgress.totalUnitCount = expectedSize;
             wself.sd_imageProgress.completedUnitCount = receivedSize;
@@ -119,6 +124,7 @@ static char TAG_ACTIVITY_SHOW;
             }
         };
         id <SDWebImageOperation> operation = [manager loadImageWithURL:url options:options progress:combinedProgressBlock completed:^(UIImage *image, NSData *data, NSError *error, SDImageCacheType cacheType, BOOL finished, NSURL *imageURL) {
+            // 下载图片完成以后的回调
             __strong __typeof (wself) sself = wself;
             if (!sself) { return; }
 #if SD_UIKIT

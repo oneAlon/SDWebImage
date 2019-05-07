@@ -142,11 +142,11 @@
 @interface SDImageCache ()
 
 #pragma mark - Properties
-@property (strong, nonatomic, nonnull) SDMemoryCache *memCache;
-@property (strong, nonatomic, nonnull) NSString *diskCachePath;
-@property (strong, nonatomic, nullable) NSMutableArray<NSString *> *customPaths;
-@property (strong, nonatomic, nullable) dispatch_queue_t ioQueue;
-@property (strong, nonatomic, nonnull) NSFileManager *fileManager;
+@property (strong, nonatomic, nonnull) SDMemoryCache *memCache;// 内存缓存
+@property (strong, nonatomic, nonnull) NSString *diskCachePath;// 磁盘路径
+@property (strong, nonatomic, nullable) NSMutableArray<NSString *> *customPaths;// 查找缓存图片的时候会从指定路径查找
+@property (strong, nonatomic, nullable) dispatch_queue_t ioQueue;// IO队列, 串行队列
+@property (strong, nonatomic, nonnull) NSFileManager *fileManager;// 文件管理器
 
 @end
 
@@ -176,6 +176,7 @@
 - (nonnull instancetype)initWithNamespace:(nonnull NSString *)ns
                        diskCacheDirectory:(nonnull NSString *)directory {
     if ((self = [super init])) {
+        // com.hackemist.SDWebImageCache.default
         NSString *fullNamespace = [@"com.hackemist.SDWebImageCache." stringByAppendingString:ns];
         
         // Create IO serial queue
@@ -241,6 +242,7 @@
     return [self cachePathForKey:key inPath:self.diskCachePath];
 }
 
+// 根据图片url 经过MD5加密 返回缓存文件名
 - (nullable NSString *)cachedFileNameForKey:(nullable NSString *)key {
     const char *str = key.UTF8String;
     if (str == NULL) {
@@ -280,6 +282,7 @@
     [self storeImage:image imageData:nil forKey:key toDisk:toDisk completion:completionBlock];
 }
 
+// 缓存图片
 - (void)storeImage:(nullable UIImage *)image
          imageData:(nullable NSData *)imageData
             forKey:(nullable NSString *)key
@@ -292,12 +295,14 @@
         return;
     }
     // if memory cache is enabled
+    // 内存缓存
     if (self.config.shouldCacheImagesInMemory) {
         NSUInteger cost = image.sd_memoryCost;
         [self.memCache setObject:image forKey:key cost:cost];
     }
     
     if (toDisk) {
+        // 磁盘缓存, 串行队列异步操作, 不阻塞线程
         dispatch_async(self.ioQueue, ^{
             @autoreleasepool {
                 NSData *data = imageData;
@@ -699,6 +704,7 @@
             cacheFiles[fileURL] = resourceValues;
         }
         
+        // 删除旧的文件
         for (NSURL *fileURL in urlsToDelete) {
             [self.fileManager removeItemAtURL:fileURL error:nil];
         }

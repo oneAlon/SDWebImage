@@ -54,6 +54,7 @@ typedef NSMapTable<NSString *, id<SDWebImageOperation>> SDOperationsDictionary;
             if ([operation conformsToProtocol:@protocol(SDWebImageOperation)]) {
                 [operation cancel];
             }
+            // 多线程 加锁
             @synchronized (self) {
                 [operationDictionary removeObjectForKey:key];
             }

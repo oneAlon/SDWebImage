@@ -25,6 +25,7 @@ typedef NS_ENUM(NSUInteger, SDImageCacheConfigExpireType) {
 /**
  * Decompressing images that are downloaded and cached can improve performance but can consume lot of memory.
  * Defaults to YES. Set this to NO if you are experiencing a crash due to excessive memory consumption.
+ * 是否解压缩图片
  */
 @property (assign, nonatomic) BOOL shouldDecompressImages;
 
@@ -38,6 +39,7 @@ typedef NS_ENUM(NSUInteger, SDImageCacheConfigExpireType) {
  * Whether or not to use memory cache
  * @note When the memory cache is disabled, the weak memory cache will also be disabled.
  * Defaults to YES.
+ * 是否使用内存缓存
  */
 @property (assign, nonatomic) BOOL shouldCacheImagesInMemory;
 
@@ -62,11 +64,13 @@ typedef NS_ENUM(NSUInteger, SDImageCacheConfigExpireType) {
 
 /**
  * The maximum length of time to keep an image in the cache, in seconds.
+ * 最大缓存时间 单位是s 默认为一周
  */
 @property (assign, nonatomic) NSInteger maxCacheAge;
 
 /**
  * The maximum size of the cache, in bytes.
+ * 缓存大小限制, 默认为0 不做限制
  */
 @property (assign, nonatomic) NSUInteger maxCacheSize;
 

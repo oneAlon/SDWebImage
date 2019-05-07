@@ -133,21 +133,26 @@
     }
 
     SDWebImageCombinedOperation *operation = [SDWebImageCombinedOperation new];
+    // 弱引用
     operation.manager = self;
 
     BOOL isFailedUrl = NO;
     if (url) {
+        // 使用信号量加锁
         LOCK(self.failedURLsLock);
         isFailedUrl = [self.failedURLs containsObject:url];
+        // 解锁
         UNLOCK(self.failedURLsLock);
     }
 
+    // url被标记为错误
     if (url.absoluteString.length == 0 || (!(options & SDWebImageRetryFailed) && isFailedUrl)) {
         [self callCompletionBlockForOperation:operation completion:completedBlock error:[NSError errorWithDomain:NSURLErrorDomain code:NSURLErrorFileDoesNotExist userInfo:nil] url:url];
         return operation;
     }
 
     LOCK(self.runningOperationsLock);
+    // 记录正在执行的所有operation
     [self.runningOperations addObject:operation];
     UNLOCK(self.runningOperationsLock);
     NSString *key = [self cacheKeyForURL:url];
@@ -158,6 +163,7 @@
     if (options & SDWebImageScaleDownLargeImages) cacheOptions |= SDImageCacheScaleDownLargeImages;
     
     __weak SDWebImageCombinedOperation *weakOperation = operation;
+    // 这里会将operation(SDWebImageCombinedOperation类型)返回, 在UIView的分类中记录operation
     operation.cacheOperation = [self.imageCache queryCacheOperationForKey:key options:cacheOptions done:^(UIImage *cachedImage, NSData *cachedData, SDImageCacheType cacheType) {
         __strong __typeof(weakOperation) strongOperation = weakOperation;
         if (!strongOperation || strongOperation.isCancelled) {

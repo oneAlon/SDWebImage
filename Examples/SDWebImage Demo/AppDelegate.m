@@ -17,6 +17,13 @@
 @synthesize window = _window;
 @synthesize navigationController = _navigationController;
 
+/*
+ 1. dyld加载动态库
+ 2. runtime合并分类
+ 3. didfinishlaunching
+ */
+
+
 - (BOOL)application:(UIApplication *)application didFinishLaunchingWithOptions:(NSDictionary *)launchOptions
 {
     //Add a custom read-only cache path
